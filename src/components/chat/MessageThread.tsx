@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Terminal, Radio, Cpu, AlertTriangle, Wifi } from "lucide-react";
+import AvatarDisplay from "./AvatarDisplay";
 
 interface Message {
   id: string;
@@ -64,6 +65,20 @@ const userColors = [
   "#FF0080", // Pink
 ];
 
+// Background colors for message bubbles based on username
+const userBubbleColors = [
+  "rgba(0, 255, 0, 0.15)", // Green tint
+  "rgba(0, 255, 255, 0.15)", // Cyan tint
+  "rgba(255, 0, 255, 0.15)", // Magenta tint
+  "rgba(255, 255, 0, 0.15)", // Yellow tint
+  "rgba(255, 0, 0, 0.15)", // Red tint
+  "rgba(0, 0, 255, 0.15)", // Blue tint
+  "rgba(255, 128, 0, 0.15)", // Orange tint
+  "rgba(0, 255, 128, 0.15)", // Mint tint
+  "rgba(128, 0, 255, 0.15)", // Purple tint
+  "rgba(255, 0, 128, 0.15)", // Pink tint
+];
+
 // Function to get a consistent color and gradient for a username
 const getUserStyles = (username: string) => {
   // Simple hash function to get a consistent index for a username
@@ -75,6 +90,7 @@ const getUserStyles = (username: string) => {
   return {
     color: userColors[index],
     gradient: userGradients[index],
+    bubbleColor: userBubbleColors[index],
   };
 };
 
@@ -176,56 +192,59 @@ const MessageThread: React.FC<MessageThreadProps> = ({
       prevSide = side;
 
       return (
-        <div key={message.id} className="flex justify-center mb-2 sm:mb-3">
-          {side === "left" && (
-            <Avatar className="mr-1 sm:mr-2 mt-1 h-6 w-6 sm:h-8 sm:w-8 flex-shrink-0 border border-retro-border">
-              <AvatarImage
-                src={
-                  isCurrentUser
-                    ? "https://api.dicebear.com/7.x/bottts/svg?seed=you"
-                    : `https://api.dicebear.com/7.x/bottts/svg?seed=${username}`
-                }
-              />
-              <AvatarFallback
-                style={{ backgroundColor: "#000", color: userStyles.color }}
-                className="font-retro text-[8px] sm:text-xs"
-              >
-                {username.charAt(0)}
-              </AvatarFallback>
-            </Avatar>
-          )}
-
-          <div className="flex flex-col w-[75%] sm:w-[70%] mx-auto max-w-full">
+        <div
+          key={message.id}
+          className="flex justify-center mb-2 sm:mb-3 w-full px-2 sm:px-4"
+        >
+          <div className="flex flex-col w-full max-w-full overflow-hidden">
             <Card
               className={`p-1 sm:p-3 border ${side === "right" ? "border-retro-glow" : "border-retro-border"} ${
-                side === "right"
-                  ? "bg-retro-user-msg text-retro-glow rounded-tr-none"
-                  : "bg-retro-other-msg text-retro-text rounded-tl-none"
+                side === "right" ? "text-retro-glow" : "text-retro-text"
               }`}
+              style={{
+                backgroundColor: userStyles.bubbleColor,
+                backgroundImage:
+                  side === "right"
+                    ? "linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.3))"
+                    : "linear-gradient(rgba(0,0,0,0.1), rgba(0,0,0,0.2))",
+              }}
             >
               <div className="flex flex-col">
-                <div className="flex justify-between items-center mb-1 gap-1 sm:gap-4">
-                  <span
-                    className="text-[10px] sm:text-xs font-bold tracking-wider px-1 sm:px-2 py-0.5 sm:py-1 rounded text-white"
-                    style={{
-                      fontFamily: "'Press Start 2P', 'VT323', monospace",
-                      textShadow: "0 0 2px rgba(255,255,255,0.3)",
-                    }}
-                  >
-                    {username}
-                  </span>
-                  <span className="text-[8px] sm:text-xs opacity-70 font-mono bg-black bg-opacity-30 px-1 sm:px-2 py-0.5 rounded">
-                    {getTimestamp(message)}
-                  </span>
+                <div className="flex items-center mb-1 gap-1 sm:gap-2">
+                  <AvatarDisplay
+                    username={username}
+                    isCurrentUser={isCurrentUser}
+                    userColor={userStyles.color}
+                    size="sm"
+                  />
+                  <div className="flex flex-1 justify-between items-center gap-1 sm:gap-2">
+                    <a
+                      href="#"
+                      className="text-[10px] sm:text-xs font-bold tracking-wider px-1 sm:px-2 py-0.5 rounded"
+                      style={{
+                        fontFamily: "'Press Start 2P', 'VT323', monospace",
+                        textShadow: "0 0 2px rgba(255,255,255,0.3)",
+                        color: userStyles.color,
+                        filter: "brightness(1.5)",
+                      }}
+                    >
+                      {username}
+                    </a>
+                    <span className="text-[8px] sm:text-xs opacity-70 font-mono bg-black bg-opacity-30 px-1 sm:px-2 py-0.5 rounded whitespace-nowrap">
+                      {getTimestamp(message)}
+                    </span>
+                  </div>
                 </div>
                 <div
                   className="border-t border-dashed border-opacity-30 my-1"
                   style={{ borderColor: userStyles.color }}
                 ></div>
                 <div
-                  className="font-mono text-white break-words text-xs sm:text-base"
+                  className="font-mono text-white break-words text-xs sm:text-base w-full overflow-hidden"
                   style={{
                     textShadow: "0 0 1px rgba(0,0,0,0.5)",
+                    wordBreak: "break-word",
+                    overflowWrap: "break-word",
                   }}
                   dangerouslySetInnerHTML={{
                     __html: formatMessageWithLinks(getMessageContent(message)),
@@ -247,76 +266,95 @@ const MessageThread: React.FC<MessageThreadProps> = ({
                 ) : (
                   <div className="flex items-center gap-1">
                     <span className="text-retro-accent">
-                      {message.read ? "[READ]" : "[UNREAD]"}
+                      {message.read ? (
+                        "[READ]"
+                      ) : (
+                        <a
+                          href="https://dropdir.xyz"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="hover:underline"
+                        >
+                          dropdir.xyz
+                        </a>
+                      )}
                     </span>
-                    {message.read ? (
+                    {message.read && (
                       <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                    ) : (
-                      <div className="w-3 h-3 rounded-full bg-blue-500 animate-pulse"></div>
                     )}
                   </div>
                 )}
               </div>
             </Card>
           </div>
-
-          {side === "right" && (
-            <Avatar className="ml-1 sm:ml-2 mt-1 h-6 w-6 sm:h-8 sm:w-8 flex-shrink-0 border border-retro-glow">
-              <AvatarImage
-                src={
-                  isCurrentUser
-                    ? "https://api.dicebear.com/7.x/bottts/svg?seed=you"
-                    : `https://api.dicebear.com/7.x/bottts/svg?seed=${username}`
-                }
-              />
-              <AvatarFallback
-                style={{ backgroundColor: "#000", color: userStyles.color }}
-                className="font-retro text-[8px] sm:text-xs"
-              >
-                {username.charAt(0)}
-              </AvatarFallback>
-            </Avatar>
-          )}
         </div>
       );
     });
   };
 
+  // Get current time in WIB (UTC+7)
+  const getCurrentTimeWIB = () => {
+    const now = new Date();
+    return now.toLocaleTimeString("id-ID", {
+      timeZone: "Asia/Jakarta",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: false,
+    });
+  };
+
+  const [currentTimeWIB, setCurrentTimeWIB] = useState(getCurrentTimeWIB());
+
+  // Update time every second
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTimeWIB(getCurrentTimeWIB());
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
+
   return (
-    <div className="flex flex-col h-full bg-retro-terminal border-2 border-retro-border">
+    <div className="flex flex-col h-full bg-retro-terminal border-2 border-retro-border mx-2 sm:mx-4 my-2">
       {/* Header */}
       <div className="flex items-center justify-between p-2 sm:p-3 bg-retro-header text-retro-text border-b-2 border-retro-border">
         <div className="flex items-center gap-2 sm:gap-3">
-          <Avatar className="border-2 border-retro-border h-8 w-8 sm:h-10 sm:w-10">
-            <AvatarImage src={recipientUser.avatar_url} />
-            <AvatarFallback className="bg-retro-robot font-retro text-xs sm:text-sm">
-              {recipientUser.username.charAt(0)}
-            </AvatarFallback>
-          </Avatar>
+          <AvatarDisplay
+            username={recipientUser.username}
+            isCurrentUser={false}
+            userColor="var(--retro-robot)"
+            size="md"
+          />
           <div>
             <h2 className="font-retro tracking-wider text-sm sm:text-base">
               {recipientUser.username}
             </h2>
             <div className="flex items-center text-[10px] sm:text-xs text-retro-glow">
               <Wifi className="h-2 w-2 sm:h-3 sm:w-3 mr-1 animate-pulse" />
-              <span>SIGNAL ACTIVE</span>
+              <span>Airdrop Channel Listener</span>
             </div>
           </div>
         </div>
-        <div className="flex space-x-2">
-          <Terminal className="h-4 w-4 sm:h-5 sm:w-5 text-retro-glow" />
-          <Radio className="h-4 w-4 sm:h-5 sm:w-5 text-retro-glow animate-pulse" />
-          <Cpu className="h-4 w-4 sm:h-5 sm:w-5 text-retro-glow" />
+        <div className="flex flex-col items-end">
+          <div className="text-xs font-mono text-retro-glow mb-1">
+            {currentTimeWIB} WIB
+          </div>
+          <div className="flex space-x-2">
+            <Terminal className="h-4 w-4 sm:h-5 sm:w-5 text-retro-glow" />
+            <Radio className="h-4 w-4 sm:h-5 sm:w-5 text-retro-glow animate-pulse" />
+            <Cpu className="h-4 w-4 sm:h-5 sm:w-5 text-retro-glow" />
+          </div>
         </div>
       </div>
 
       {/* Messages */}
-      <ScrollArea className="flex-1 p-4 bg-retro-bg">
+      <ScrollArea className="flex-1 p-4 sm:p-6 bg-retro-bg">
         <div className="space-y-2">
           <div className="text-center mb-4">
             <div className="inline-block px-3 py-1 bg-retro-terminal border border-retro-border rounded-md">
               <span className="text-xs font-retro text-retro-glow">
-                CHANNEL MONITORING ACTIVE
+                Airdrop Channel Listener
               </span>
             </div>
           </div>
