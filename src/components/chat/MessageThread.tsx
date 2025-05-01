@@ -20,6 +20,8 @@ interface Message {
   read?: boolean;
   status?: "sent" | "delivered" | "read";
   username?: string; // Added username field
+  name?: string; // Added name field
+  link?: string; // Added link field
 }
 
 interface User {
@@ -148,6 +150,7 @@ const MessageThread: React.FC<MessageThreadProps> = ({
 
   const getUsername = (message: Message) => {
     return (
+      message.name ||
       message.username ||
       (getSenderId(message) === currentUserId ? "You" : recipientUser.username)
     );
@@ -270,12 +273,13 @@ const MessageThread: React.FC<MessageThreadProps> = ({
                         "[READ]"
                       ) : (
                         <a
-                          href="https://dropdir.xyz"
+                          href={message.link || "#"}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="hover:underline"
+                          className="hover:underline flex items-center gap-1"
+                          title={message.link}
                         >
-                          dropdir.xyz
+                          <Terminal className="h-3 w-3" />
                         </a>
                       )}
                     </span>

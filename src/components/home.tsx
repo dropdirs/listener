@@ -15,6 +15,7 @@ interface TelegramMessage {
   message: string;
   sent_at: string;
   channel_id?: string;
+  link?: string;
 }
 
 interface TelegramChannel {
@@ -35,6 +36,7 @@ interface Message {
   status: "sent" | "delivered" | "read";
   username: string;
   channelId: string;
+  link?: string;
 }
 
 const Home = () => {
@@ -144,6 +146,7 @@ const Home = () => {
               status: "delivered",
               username: msg.username,
               channelId: msg.channel_id || "1",
+              link: msg.link,
             }),
           );
           setMessages(supabaseMessages);
@@ -166,7 +169,7 @@ const Home = () => {
 
     // Set up real-time subscription for all telegram messages
     const messagesSubscription = supabase
-      .channel(`telegram_messages_realtime`)
+      .channel("telegram_messages_realtime")
       .on(
         "postgres_changes",
         {
@@ -188,11 +191,59 @@ const Home = () => {
               status: "delivered",
               username: newMessage.username,
               channelId: newMessage.channel_id || "1",
+              link: newMessage.link,
             },
           ]);
         },
       )
-      .subscribe();
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "telegram_messages",
+        },
+        (payload) => {
+          console.log("Updated telegram message:", payload);
+
+          const updatedMessage = payload.new as TelegramMessage;
+          setMessages((prevMessages) =>
+            prevMessages.map((msg) =>
+              msg.id === updatedMessage.id
+                ? {
+                    id: updatedMessage.id,
+                    senderId: updatedMessage.username,
+                    text: updatedMessage.message,
+                    timestamp: updatedMessage.sent_at,
+                    status: "delivered",
+                    username: updatedMessage.username,
+                    channelId: updatedMessage.channel_id || "1",
+                    link: updatedMessage.link,
+                  }
+                : msg,
+            ),
+          );
+        },
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "DELETE",
+          schema: "public",
+          table: "telegram_messages",
+        },
+        (payload) => {
+          console.log("Deleted telegram message:", payload);
+
+          const deletedMessageId = payload.old.id;
+          setMessages((prevMessages) =>
+            prevMessages.filter((msg) => msg.id !== deletedMessageId),
+          );
+        },
+      )
+      .subscribe((status) => {
+        console.log("Supabase real-time subscription status:", status);
+      });
 
     return () => {
       supabase.removeChannel(messagesSubscription);
