@@ -18,6 +18,7 @@ interface Message {
   created_at?: string;
   timestamp?: string;
   read?: boolean;
+  isRead?: boolean; // Client-side read status
   status?: "sent" | "delivered" | "read";
   username?: string; // Added username field
   name?: string; // Added name field
@@ -39,46 +40,46 @@ interface MessageThreadProps {
   conversation?: any;
 }
 
-// Color palette for different usernames - retro robotic theme with gradients
+// Color palette for different usernames - white, red, yellow, green gradient theme
 const userGradients = [
-  "linear-gradient(to right, #00FF00, #00FFAA)", // Green to Teal
-  "linear-gradient(to right, #00FFFF, #0088FF)", // Cyan to Blue
-  "linear-gradient(to right, #FF00FF, #FF0088)", // Magenta to Pink
-  "linear-gradient(to right, #FFFF00, #FFAA00)", // Yellow to Orange
-  "linear-gradient(to right, #FF0000, #FF8800)", // Red to Orange
-  "linear-gradient(to right, #0000FF, #8800FF)", // Blue to Purple
-  "linear-gradient(to right, #FF8000, #FFAA00)", // Orange to Amber
-  "linear-gradient(to right, #00FF80, #00FFFF)", // Mint to Cyan
-  "linear-gradient(to right, #8000FF, #FF00FF)", // Purple to Magenta
-  "linear-gradient(to right, #FF0080, #FF00FF)", // Pink to Magenta
+  "linear-gradient(to right, #FFFFFF, #FF0000, #FFFF00, #00FF00)", // White, Red, Yellow, Green
+  "linear-gradient(to right, #F0F0F0, #FF3333, #FFFF33, #33FF33)", // Slight variations
+  "linear-gradient(to right, #E0E0E0, #FF6666, #FFFF66, #66FF66)", // More variations
+  "linear-gradient(to right, #D0D0D0, #FF9999, #FFFF99, #99FF99)", // Even more variations
+  "linear-gradient(to right, #FFFFFF, #FF0000, #FFFF00, #00FF00)", // Repeat base gradient
+  "linear-gradient(to right, #F0F0F0, #FF3333, #FFFF33, #33FF33)", // Repeat variations
+  "linear-gradient(to right, #E0E0E0, #FF6666, #FFFF66, #66FF66)", // Repeat more variations
+  "linear-gradient(to right, #D0D0D0, #FF9999, #FFFF99, #99FF99)", // Repeat even more variations
+  "linear-gradient(to right, #FFFFFF, #FF0000, #FFFF00, #00FF00)", // Repeat base gradient again
+  "linear-gradient(to right, #F0F0F0, #FF3333, #FFFF33, #33FF33)", // Repeat variations again
 ];
 
-// Fallback solid colors for cases where gradients can't be applied
+// Fallback solid colors for cases where gradients can't be applied - white, red, yellow, green theme
 const userColors = [
-  "#00FF00", // Bright Green
-  "#00FFFF", // Cyan
-  "#FF00FF", // Magenta
+  "#00FF00", // Green (end of gradient)
+  "#33FF33", // Light Green
   "#FFFF00", // Yellow
+  "#FFFF33", // Light Yellow
   "#FF0000", // Red
-  "#0000FF", // Blue
-  "#FF8000", // Orange
-  "#00FF80", // Mint
-  "#8000FF", // Purple
-  "#FF0080", // Pink
+  "#FF3333", // Light Red
+  "#FFFFFF", // White
+  "#F0F0F0", // Light White
+  "#E0E0E0", // Lighter White
+  "#D0D0D0", // Even Lighter White
 ];
 
-// Background colors for message bubbles based on username
+// Background colors for message bubbles based on username - aligned with retro theme
 const userBubbleColors = [
-  "rgba(0, 255, 0, 0.15)", // Green tint
-  "rgba(0, 255, 255, 0.15)", // Cyan tint
-  "rgba(255, 0, 255, 0.15)", // Magenta tint
-  "rgba(255, 255, 0, 0.15)", // Yellow tint
-  "rgba(255, 0, 0, 0.15)", // Red tint
-  "rgba(0, 0, 255, 0.15)", // Blue tint
-  "rgba(255, 128, 0, 0.15)", // Orange tint
-  "rgba(0, 255, 128, 0.15)", // Mint tint
-  "rgba(128, 0, 255, 0.15)", // Purple tint
-  "rgba(255, 0, 128, 0.15)", // Pink tint
+  "rgba(0, 255, 0, 0.2)", // Green tint - more vibrant
+  "rgba(51, 255, 51, 0.2)", // Light Green tint - more vibrant
+  "rgba(255, 255, 0, 0.2)", // Yellow tint - more vibrant
+  "rgba(255, 255, 51, 0.2)", // Light Yellow tint - more vibrant
+  "rgba(255, 0, 0, 0.2)", // Red tint - more vibrant
+  "rgba(255, 51, 51, 0.2)", // Light Red tint - more vibrant
+  "rgba(128, 0, 128, 0.2)", // Purple tint - added for theme
+  "rgba(160, 32, 240, 0.2)", // Purple tint variant - added for theme
+  "rgba(75, 0, 130, 0.2)", // Indigo tint - added for theme
+  "rgba(138, 43, 226, 0.2)", // Violet tint - added for theme
 ];
 
 // Function to get a consistent color and gradient for a username
@@ -107,12 +108,65 @@ const MessageThread: React.FC<MessageThreadProps> = ({
   messages = [],
   onSendMessage = () => {},
 }) => {
+  // Reference for notification sound
+  const notificationSound = useRef<HTMLAudioElement | null>(null);
+
+  // Initialize notification sound
+  useEffect(() => {
+    notificationSound.current = new Audio("/sounds/bird-notification.mp3");
+  }, []);
+  // Track which messages have been read by the client
+  const [readMessageIds, setReadMessageIds] = useState<Set<string>>(new Set());
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Scroll to bottom of messages when messages change
+  // Previous messages reference for detecting new messages
+  const prevMessagesRef = useRef<Message[]>([]);
+
+  // Scroll to bottom of messages when messages change, mark visible messages as read, and play sound for new messages
   useEffect(() => {
     scrollToBottom();
+    markVisibleMessagesAsRead();
+
+    // Check for new messages from others and play notification sound
+    if (prevMessagesRef.current.length < messages.length) {
+      const newMessages = messages.filter(
+        (message) =>
+          !prevMessagesRef.current.some((prevMsg) => prevMsg.id === message.id),
+      );
+
+      // Play sound for each new message that's not from current user
+      newMessages.forEach((message) => {
+        const senderId = getSenderId(message);
+        if (senderId !== currentUserId && notificationSound.current) {
+          notificationSound.current.play().catch((error) => {
+            console.error("Error playing notification sound:", error);
+          });
+        }
+      });
+    }
+
+    // Update previous messages reference
+    prevMessagesRef.current = [...messages];
   }, [messages]);
+
+  // Function to mark messages as read when they are visible in the viewport
+  const markVisibleMessagesAsRead = () => {
+    // For simplicity, we'll mark all messages as read when they're loaded
+    // In a real implementation, you would use IntersectionObserver to check visibility
+    const newReadMessageIds = new Set(readMessageIds);
+
+    messages.forEach((message) => {
+      const senderId = getSenderId(message);
+      // Only mark messages from others as read (not our own messages)
+      if (senderId !== currentUserId) {
+        newReadMessageIds.add(message.id);
+      }
+    });
+
+    if (newReadMessageIds.size !== readMessageIds.size) {
+      setReadMessageIds(newReadMessageIds);
+    }
+  };
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -161,7 +215,9 @@ const MessageThread: React.FC<MessageThreadProps> = ({
   };
 
   const getMessageStatus = (message: Message) => {
-    if (message.read) return "read";
+    // Check client-side read status first
+    if (readMessageIds.has(message.id) || message.isRead || message.read)
+      return "read";
     if (message.status) return message.status;
     return "sent";
   };
@@ -199,7 +255,7 @@ const MessageThread: React.FC<MessageThreadProps> = ({
           key={message.id}
           className="flex justify-center mb-2 sm:mb-3 w-full px-2 sm:px-4"
         >
-          <div className="flex flex-col w-full max-w-full overflow-hidden">
+          <div className="flex flex-col w-full max-w-[80%] sm:max-w-[70%] md:max-w-[60%] overflow-hidden">
             <Card
               className={`p-1 sm:p-3 border ${side === "right" ? "border-retro-glow" : "border-retro-border"} ${
                 side === "right" ? "text-retro-glow" : "text-retro-text"
@@ -208,8 +264,12 @@ const MessageThread: React.FC<MessageThreadProps> = ({
                 backgroundColor: userStyles.bubbleColor,
                 backgroundImage:
                   side === "right"
-                    ? "linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.3))"
-                    : "linear-gradient(rgba(0,0,0,0.1), rgba(0,0,0,0.2))",
+                    ? `linear-gradient(rgba(0,0,0,0.25), rgba(0,0,0,0.35)), linear-gradient(to right, rgba(128,0,128,0.15), rgba(160,32,240,0.15), rgba(75,0,130,0.15), rgba(0,255,0,0.15))`
+                    : `linear-gradient(rgba(0,0,0,0.15), rgba(0,0,0,0.25)), linear-gradient(to right, rgba(128,0,128,0.1), rgba(160,32,240,0.1), rgba(75,0,130,0.1), rgba(0,255,0,0.1))`,
+                boxShadow:
+                  side === "right"
+                    ? "0 0 8px rgba(0,255,0,0.25)"
+                    : "0 0 5px rgba(128,0,128,0.25)",
               }}
             >
               <div className="flex flex-col">
@@ -227,7 +287,9 @@ const MessageThread: React.FC<MessageThreadProps> = ({
                       style={{
                         fontFamily: "'Press Start 2P', 'VT323', monospace",
                         textShadow: "0 0 2px rgba(255,255,255,0.3)",
-                        color: userStyles.color,
+                        background: userStyles.gradient,
+                        WebkitBackgroundClip: "text",
+                        WebkitTextFillColor: "transparent",
                         filter: "brightness(1.5)",
                       }}
                     >
