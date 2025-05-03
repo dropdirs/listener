@@ -22,7 +22,7 @@ interface Message {
   status?: "sent" | "delivered" | "read";
   username?: string; // Added username field
   name?: string; // Added name field
-  link?: string; // Added link field
+  link?: string; // Link to the Telegram post
 }
 
 interface User {
@@ -261,11 +261,11 @@ const MessageThread: React.FC<MessageThreadProps> = ({
       return (
         <div
           key={message.id}
-          className="flex justify-center mb-2 sm:mb-3 w-full px-2 sm:px-4"
+          className="flex justify-center mb-0.5 sm:mb-1 w-full px-0.5 sm:px-1"
         >
-          <div className="flex flex-col w-full max-w-[100%] sm:max-w-[80%] md:max-w-[70%] overflow-hidden">
+          <div className="flex flex-col w-full max-w-[100%] sm:max-w-[85%] md:max-w-[80%] overflow-hidden">
             <Card
-              className={`p-1 sm:p-3 border ${side === "right" ? "border-retro-glow" : "border-retro-border"} ${
+              className={`p-0.5 sm:p-1 border ${side === "right" ? "border-retro-glow" : "border-retro-border"} ${
                 side === "right" ? "text-retro-glow" : "text-retro-text"
               }`}
               style={{
@@ -281,7 +281,7 @@ const MessageThread: React.FC<MessageThreadProps> = ({
               }}
             >
               <div className="flex flex-col">
-                <div className="flex items-center mb-1 gap-1 sm:gap-2">
+                <div className="flex items-center mb-0.5 gap-1 sm:gap-1.5">
                   <AvatarDisplay
                     username={username}
                     isCurrentUser={isCurrentUser}
@@ -291,7 +291,7 @@ const MessageThread: React.FC<MessageThreadProps> = ({
                   <div className="flex flex-1 justify-between items-center gap-1 sm:gap-2">
                     <a
                       href="#"
-                      className="text-[10px] sm:text-xs font-bold tracking-wider px-1 sm:px-2 py-0.5 rounded"
+                      className="text-[8px] sm:text-[10px] font-bold tracking-wider px-1 py-0.5 rounded"
                       style={{
                         fontFamily: "'Press Start 2P', 'VT323', monospace",
                         textShadow: "0 0 2px rgba(255,255,255,0.3)",
@@ -303,17 +303,17 @@ const MessageThread: React.FC<MessageThreadProps> = ({
                     >
                       {username}
                     </a>
-                    <span className="text-[8px] sm:text-xs text-white font-mono bg-black bg-opacity-30 px-1 sm:px-2 py-0.5 rounded whitespace-nowrap">
+                    <span className="text-[7px] sm:text-[9px] text-white font-mono bg-black bg-opacity-30 px-1 py-0.5 rounded whitespace-nowrap">
                       {getTimestamp(message)}
                     </span>
                   </div>
                 </div>
                 <div
-                  className="border-t border-dashed border-opacity-30 my-1"
+                  className="border-t border-dashed border-opacity-30 my-0.5"
                   style={{ borderColor: userStyles.color }}
                 ></div>
                 <div
-                  className="font-mono text-white break-words text-xs sm:text-base w-full overflow-hidden"
+                  className="font-mono text-white break-words text-[10px] sm:text-xs w-full overflow-hidden"
                   style={{
                     textShadow: "0 0 1px rgba(0,0,0,0.5)",
                     wordBreak: "break-word",
@@ -324,37 +324,36 @@ const MessageThread: React.FC<MessageThreadProps> = ({
                   }}
                 ></div>
               </div>
-              <div className="flex items-center justify-end gap-1 mt-2 text-xs">
+              <div className="flex items-center justify-end gap-1 mt-1 text-[9px]">
                 {isCurrentUser ? (
                   <div className="flex items-center gap-1">
                     <span className="text-retro-accent">
                       {messageStatus === "read" ? "[RECEIVED]" : "[SENT]"}
                     </span>
                     {messageStatus === "read" ? (
-                      <div className="w-3 h-3 rounded-full bg-green-500 animate-pulse"></div>
+                      <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
                     ) : (
-                      <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
+                      <div className="w-2 h-2 rounded-full bg-yellow-500"></div>
                     )}
                   </div>
                 ) : (
                   <div className="flex items-center gap-1">
                     <span className="text-retro-accent">
-                      {message.read ? (
-                        "[READ]"
-                      ) : (
-                        <a
-                          href={message.link || "#"}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="hover:underline flex items-center gap-1"
-                          title={message.link}
-                        >
-                          <Terminal className="h-3 w-3" />
-                        </a>
-                      )}
+                      <a
+                        href={message.link || "https://t.me/"}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="hover:underline flex items-center gap-1"
+                        title="View on Telegram"
+                      >
+                        <Terminal className="h-2 w-2" />
+                        <span className="text-[7px] sm:text-[8px]">
+                          TELEGRAM
+                        </span>
+                      </a>
                     </span>
                     {message.read && (
-                      <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                      <div className="w-2 h-2 rounded-full bg-green-500"></div>
                     )}
                   </div>
                 )}
@@ -390,9 +389,9 @@ const MessageThread: React.FC<MessageThreadProps> = ({
   }, []);
 
   return (
-    <div className="flex flex-col h-full bg-retro-terminal border-2 border-retro-border mx-2 sm:mx-4 my-2">
+    <div className="flex flex-col h-full bg-retro-terminal border-2 border-retro-border mx-0 sm:mx-1 my-1">
       {/* Header */}
-      <div className="flex items-center justify-between p-2 sm:p-3 bg-retro-header text-retro-text border-b-2 border-retro-border">
+      <div className="flex items-center justify-between p-2 sm:p-3 bg-retro-header text-white border-b-2 border-retro-border">
         <div className="flex items-center gap-2 sm:gap-3">
           <AvatarDisplay
             username={recipientUser.username}
@@ -401,21 +400,21 @@ const MessageThread: React.FC<MessageThreadProps> = ({
             size="md"
           />
           <div>
-            <h2 className="font-retro tracking-wider text-sm sm:text-base">
+            <h2 className="font-retro tracking-wider text-sm sm:text-base text-white">
               {recipientUser.username}
             </h2>
-            <div className="flex items-center text-[10px] sm:text-xs text-retro-glow">
+            <div className="flex items-center text-[10px] sm:text-xs text-white">
               <Wifi className="h-2 w-2 sm:h-3 sm:w-3 mr-1 animate-pulse" />
               <span>Airdrop Channel Listener</span>
             </div>
           </div>
         </div>
         <div className="flex flex-col items-end">
-          <div className="text-xs font-mono text-retro-glow mb-1">
+          <div className="text-xs font-mono text-white mb-1">
             {currentTimeWIB} WIB
           </div>
           <div className="flex space-x-2">
-            <Terminal className="h-4 w-4 sm:h-5 sm:w-5 text-retro-glow" />
+            <Terminal className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
             <button
               onClick={toggleSound}
               className="focus:outline-none"
@@ -424,18 +423,18 @@ const MessageThread: React.FC<MessageThreadProps> = ({
               }
             >
               {soundEnabled ? (
-                <Radio className="h-4 w-4 sm:h-5 sm:w-5 text-retro-glow animate-pulse" />
+                <Radio className="h-4 w-4 sm:h-5 sm:w-5 text-white animate-pulse" />
               ) : (
-                <Radio className="h-4 w-4 sm:h-5 sm:w-5 text-retro-text opacity-50" />
+                <Radio className="h-4 w-4 sm:h-5 sm:w-5 text-white opacity-50" />
               )}
             </button>
-            <Cpu className="h-4 w-4 sm:h-5 sm:w-5 text-retro-glow" />
+            <Cpu className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
           </div>
         </div>
       </div>
 
       {/* Messages */}
-      <ScrollArea className="flex-1 p-4 sm:p-6 bg-retro-bg">
+      <ScrollArea className="flex-1 p-2 sm:p-3 bg-retro-bg">
         <div className="space-y-2">
           <div className="text-center mb-4">
             <div className="inline-block px-3 py-1 bg-retro-terminal border border-retro-border rounded-md">

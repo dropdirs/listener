@@ -392,14 +392,49 @@ const Home = () => {
     channels.find((c) => c.id === selectedChannelId) || channels[0];
 
   return (
-    <div className="h-screen bg-retro-bg flex flex-col">
-      <div className="bg-retro-terminal text-retro-text p-2 font-retro text-center border-b-2 border-retro-border">
-        <h1 className="text-xl tracking-wider">
-          MULTI-TELEGRAM CHANNEL MONITOR{" "}
-          <span className="text-retro-robot">1970</span>
-        </h1>
+    <div className="h-screen bg-retro-bg flex">
+      {/* Left advertising space - only on desktop */}
+      <div className="hidden md:flex w-1/6 p-2 border-r border-retro-border flex-col items-center justify-center">
+        <div className="bg-retro-terminal p-4 w-full h-64 flex items-center justify-center mb-4 border border-retro-glow">
+          <div
+            dangerouslySetInnerHTML={{
+              __html: `
+            <script type="text/javascript">
+              atOptions = {
+                'key' : '8b32381b9b8ae9bff7b48c1f23064547',
+                'format' : 'iframe',
+                'height' : 250,
+                'width' : 300,
+                'params' : {}
+              };
+            </script>
+            <script type="text/javascript" src="//www.highperformanceformat.com/8b32381b9b8ae9bff7b48c1f23064547/invoke.js"></script>
+          `,
+            }}
+          />
+        </div>
+        <div className="bg-retro-terminal p-4 w-full h-64 flex items-center justify-center border border-retro-glow">
+          <div
+            dangerouslySetInnerHTML={{
+              __html: `
+            <script type="text/javascript">
+              atOptions = {
+                'key' : '8b32381b9b8ae9bff7b48c1f23064547',
+                'format' : 'iframe',
+                'height' : 250,
+                'width' : 300,
+                'params' : {}
+              };
+            </script>
+            <script type="text/javascript" src="//www.highperformanceformat.com/8b32381b9b8ae9bff7b48c1f23064547/invoke.js"></script>
+          `,
+            }}
+          />
+        </div>
       </div>
-      <div className="h-full overflow-hidden">
+
+      {/* Main content */}
+      <div className="flex-1 flex flex-col h-full overflow-hidden">
         <div className="h-full">
           <MessageThread
             messages={messages}
@@ -408,6 +443,46 @@ const Home = () => {
               username: "TELEGRAM FEED",
               avatar_url:
                 "https://api.dicebear.com/7.x/bottts/svg?seed=telegram",
+            }}
+          />
+        </div>
+      </div>
+
+      {/* Right advertising space - only on desktop */}
+      <div className="hidden md:flex w-1/6 p-2 border-l border-retro-border flex-col items-center justify-center">
+        <div className="bg-retro-terminal p-4 w-full h-64 flex items-center justify-center mb-4 border border-retro-glow">
+          <div
+            dangerouslySetInnerHTML={{
+              __html: `
+            <script type="text/javascript">
+              atOptions = {
+                'key' : '8b32381b9b8ae9bff7b48c1f23064547',
+                'format' : 'iframe',
+                'height' : 250,
+                'width' : 300,
+                'params' : {}
+              };
+            </script>
+            <script type="text/javascript" src="//www.highperformanceformat.com/8b32381b9b8ae9bff7b48c1f23064547/invoke.js"></script>
+          `,
+            }}
+          />
+        </div>
+        <div className="bg-retro-terminal p-4 w-full h-64 flex items-center justify-center border border-retro-glow">
+          <div
+            dangerouslySetInnerHTML={{
+              __html: `
+            <script type="text/javascript">
+              atOptions = {
+                'key' : '8b32381b9b8ae9bff7b48c1f23064547',
+                'format' : 'iframe',
+                'height' : 250,
+                'width' : 300,
+                'params' : {}
+              };
+            </script>
+            <script type="text/javascript" src="//www.highperformanceformat.com/8b32381b9b8ae9bff7b48c1f23064547/invoke.js"></script>
+          `,
             }}
           />
         </div>
