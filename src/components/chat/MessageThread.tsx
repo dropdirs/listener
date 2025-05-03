@@ -263,7 +263,7 @@ const MessageThread: React.FC<MessageThreadProps> = ({
           key={message.id}
           className="flex justify-center mb-2 sm:mb-3 w-full px-2 sm:px-4"
         >
-          <div className="flex flex-col w-full max-w-[80%] sm:max-w-[70%] md:max-w-[60%] overflow-hidden">
+          <div className="flex flex-col w-full max-w-[95%] sm:max-w-[70%] md:max-w-[60%] overflow-hidden">
             <Card
               className={`p-1 sm:p-3 border ${side === "right" ? "border-retro-glow" : "border-retro-border"} ${
                 side === "right" ? "text-retro-glow" : "text-retro-text"
@@ -303,7 +303,7 @@ const MessageThread: React.FC<MessageThreadProps> = ({
                     >
                       {username}
                     </a>
-                    <span className="text-[8px] sm:text-xs opacity-70 font-mono bg-black bg-opacity-30 px-1 sm:px-2 py-0.5 rounded whitespace-nowrap">
+                    <span className="text-[8px] sm:text-xs text-white font-mono bg-black bg-opacity-30 px-1 sm:px-2 py-0.5 rounded whitespace-nowrap">
                       {getTimestamp(message)}
                     </span>
                   </div>
