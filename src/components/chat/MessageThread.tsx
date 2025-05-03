@@ -102,19 +102,24 @@ const MessageThread: React.FC<MessageThreadProps> = ({
   currentUserId = "user-1",
   recipientUser = {
     id: "channel-1",
-    username: "ROBOTIC NEWS",
-    avatar_url: "https://api.dicebear.com/7.x/bottts/svg?seed=robot1",
+    username: "Dropdir.xyz",
+    avatar_url: "https://i.imgur.com/Yx3oUXE.png",
   },
   messages = [],
   onSendMessage = () => {},
 }) => {
-  // Reference for notification sound
-  const notificationSound = useRef<HTMLAudioElement | null>(null);
+  // Sound preferences state
+  const [soundEnabled, setSoundEnabled] = useState<boolean>(() => {
+    const savedPreference = localStorage.getItem("soundEnabled");
+    return savedPreference !== null ? savedPreference === "true" : true;
+  });
 
-  // Initialize notification sound
-  useEffect(() => {
-    notificationSound.current = new Audio("/sounds/bird-notification.mp3");
-  }, []);
+  // Toggle sound function
+  const toggleSound = () => {
+    const newSoundState = !soundEnabled;
+    setSoundEnabled(newSoundState);
+    localStorage.setItem("soundEnabled", String(newSoundState));
+  };
   // Track which messages have been read by the client
   const [readMessageIds, setReadMessageIds] = useState<Set<string>>(new Set());
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -137,8 +142,11 @@ const MessageThread: React.FC<MessageThreadProps> = ({
       // Play sound for each new message that's not from current user
       newMessages.forEach((message) => {
         const senderId = getSenderId(message);
-        if (senderId !== currentUserId && notificationSound.current) {
-          notificationSound.current.play().catch((error) => {
+        if (senderId !== currentUserId && soundEnabled) {
+          // Create a new Audio instance for each notification to bypass autoplay restrictions
+          const sound = new Audio("/sounds/bird-notification.mp3");
+          sound.volume = 0.5; // Set volume to 50%
+          sound.play().catch((error) => {
             console.error("Error playing notification sound:", error);
           });
         }
@@ -408,7 +416,19 @@ const MessageThread: React.FC<MessageThreadProps> = ({
           </div>
           <div className="flex space-x-2">
             <Terminal className="h-4 w-4 sm:h-5 sm:w-5 text-retro-glow" />
-            <Radio className="h-4 w-4 sm:h-5 sm:w-5 text-retro-glow animate-pulse" />
+            <button
+              onClick={toggleSound}
+              className="focus:outline-none"
+              title={
+                soundEnabled ? "Mute notifications" : "Enable notifications"
+              }
+            >
+              {soundEnabled ? (
+                <Radio className="h-4 w-4 sm:h-5 sm:w-5 text-retro-glow animate-pulse" />
+              ) : (
+                <Radio className="h-4 w-4 sm:h-5 sm:w-5 text-retro-text opacity-50" />
+              )}
+            </button>
             <Cpu className="h-4 w-4 sm:h-5 sm:w-5 text-retro-glow" />
           </div>
         </div>
