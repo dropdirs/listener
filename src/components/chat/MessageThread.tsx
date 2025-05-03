@@ -263,7 +263,7 @@ const MessageThread: React.FC<MessageThreadProps> = ({
           key={message.id}
           className="flex justify-center mb-2 sm:mb-3 w-full px-2 sm:px-4"
         >
-          <div className="flex flex-col w-full max-w-[98%] sm:max-w-[75%] md:max-w-[65%] overflow-hidden">
+          <div className="flex flex-col w-full max-w-[100%] sm:max-w-[80%] md:max-w-[70%] overflow-hidden">
             <Card
               className={`p-1 sm:p-3 border ${side === "right" ? "border-retro-glow" : "border-retro-border"} ${
                 side === "right" ? "text-retro-glow" : "text-retro-text"
